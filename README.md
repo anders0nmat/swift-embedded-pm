@@ -165,24 +165,24 @@ import LedStrip
 
 @_cdecl("app_main")
 func app_main() {
-	let strip = LedStrip(pin: 8, ledCount: 1)
+    let strip = LedStrip(pin: 8, ledCount: 1)
 
-	var is_on = false
-	while true {
-		is_on.toggle()
-		switch is_on {
-			case true:
-				strip.setPixel(at: 0, to: Color(
-					red: (0..<64).randomElement()!,
-					green: (0..<64).randomElement()!,
-					blue: (0..<64).randomElement()!))
-			case false:
-				strip.clear()
-		}
-		strip.refresh()
+    var is_on = false
+    while true {
+        is_on.toggle()
+        switch is_on {
+        case true:
+            strip.setPixel(at: 0, to: Color(
+                red: (0..<64).randomElement()!,
+                green: (0..<64).randomElement()!,
+                blue: (0..<64).randomElement()!))
+        case false:
+            strip.clear()
+        }
+        strip.refresh()
 
-		vTaskDelay(500 / freeRTOS_Tick_Period)
-	}
+        vTaskDelay(500 / freeRTOS_Tick_Period)
+    }
 }
 ```
 
