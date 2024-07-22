@@ -98,8 +98,8 @@ add_custom_target(swift-compile-flags
 # Create needed symlinks so LSP finds the module information
 add_custom_target(swift-lsp-symlink
 	COMMAND
-		ln -sfT ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET}/ ${SWIFT_PRODUCT_BUILD}/${SWIFT_LSP_TARGET}/
-		&& ln -sfT ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET}/release/ ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET}/debug/
+		ln -sfT ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET} ${SWIFT_PRODUCT_BUILD}/${SWIFT_LSP_TARGET}
+		&& ln -sfT ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET}/release ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET}/debug
 	DEPENDS
 		swift-archive
 )
