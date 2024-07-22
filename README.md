@@ -32,6 +32,8 @@ This is a template project to develop Embedded Swift Packages for the ESP-IDF pl
 
 If you use VSCode and the [Swift](https://marketplace.visualstudio.com/items?itemName=sswg.swift-lang) Extension, everything should work out of the box.
 
+If LSP does not find a module, try rebuilding your project via `idf.py build`. If you have imported a Package or created a target with component requirements, make sure they are included in the `idf_component.yml` and run `idf.py reconfigure`, followed by `idf.py build`.
+
 If not, some configuration of sourcekit-lsp is necessary to use the correct target and point it to the correct header files. Additional flags you need to provide to sourcekit-lsp:
 - `-Xswiftc` `--target=riscv32-none-none-eabi`
 - `-Xswiftc` `-enable-experimental-feature` `-Xswiftc` `Embedded`
