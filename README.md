@@ -13,6 +13,9 @@ This is a template project to develop Embedded Swift Packages for the ESP-IDF pl
 - Recent installation of [ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/get-started/index.html#installation)
   - Make sure you have access to `idf.py` from the command line ([Guide](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/get-started/linux-macos-setup.html#step-4-set-up-the-environment-variables))
   - _The project was confirmed working with `ESP-IDF v5.2.2-dirty` (check with `idf.py --version`)_
+- A microcontroller with RISC-V architecture supported by ESP-IDF
+  - _The project was confirmed working with `esp32c6`_
+- _The project was confirmed working with Linux_
 
 ### Get started
 
