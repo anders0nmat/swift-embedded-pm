@@ -1,0 +1,9 @@
+{
+	"swift.sourcekit-lsp.serverArguments": [
+		"-Xswiftc", "--target=riscv32-none-none-eabi",
+		"-Xswiftc", "-enable-experimental-feature", "-Xswiftc", "Embedded",
+		"-Xswiftc", "-wmo",
+		"-Xcc", "-D__riscv",
+		"-Xcc", "--config=./.build/release/compile_flags.txt",
+	]
+}
