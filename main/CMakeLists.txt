@@ -98,8 +98,12 @@ add_custom_target(swift-compile-flags
 # Create needed symlinks so LSP finds the module information
 add_custom_target(swift-lsp-symlink
 	COMMAND
-		ln -sfT ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET} ${SWIFT_PRODUCT_BUILD}/${SWIFT_LSP_TARGET}
-		&& ln -sfT ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET}/release ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET}/debug
+		echo '' &&
+		\( ln -sfT ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET} ${SWIFT_PRODUCT_BUILD}/${SWIFT_LSP_TARGET} 2>/dev/null ||
+			\( rm -rf ${SWIFT_PRODUCT_BUILD}/${SWIFT_LSP_TARGET} && ln -sf ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET} ${SWIFT_PRODUCT_BUILD}/${SWIFT_LSP_TARGET} \)
+		\) && \( ln -sfT ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET}/release ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET}/debug 2>/dev/null ||
+			\( rm -rf ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET}/debug && ln -sf ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET}/release ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET}/debug \)
+		\)
 	DEPENDS
 		swift-archive
 )
@@ -115,7 +119,9 @@ add_custom_command(
 		# Extract first .o which defines the 'app_main' symbol
 		ar x ${SWIFT_PRODUCT_ARCHIVE} $$\( nm --defined-only -A ${SWIFT_PRODUCT_ARCHIVE} | grep -m 1 ' T app_main' | cut -d: -f2 \) --output ${SWIFT_PRODUCT_RELEASE}
 		# Rename it to a predicatble file
-		&& mv -f -T ${SWIFT_PRODUCT_RELEASE}/$$\( nm --defined-only -A ${SWIFT_PRODUCT_ARCHIVE} | grep -m 1 ' T app_main' | cut -d: -f2 \) ${SWIFT_PRODUCT_RELEASE}/_main_swiftcode.o
+		&& \( mv -f -T ${SWIFT_PRODUCT_RELEASE}/$$\( nm --defined-only -A ${SWIFT_PRODUCT_ARCHIVE} | grep -m 1 ' T app_main' | cut -d: -f2 \) ${SWIFT_PRODUCT_RELEASE}/_main_swiftcode.o 2>/dev/null || \(
+			rm -rf ${SWIFT_PRODUCT_RELEASE}/_main_swiftcode.o && mv -f ${SWIFT_PRODUCT_RELEASE}/$$\( nm --defined-only -A ${SWIFT_PRODUCT_ARCHIVE} | grep -m 1 ' T app_main' | cut -d: -f2 \) ${SWIFT_PRODUCT_RELEASE}/_main_swiftcode.o \)
+		\)
 	DEPENDS 
 		swift-archive
 		${SWIFT_PRODUCT_ARCHIVE}
