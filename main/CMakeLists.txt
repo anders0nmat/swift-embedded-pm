@@ -108,6 +108,13 @@ add_custom_target(swift-lsp-symlink
 		swift-archive
 )
 
+# Swift toolchain contains "llvm-ar" which we know to be a consistent version of "ar" across platforms.
+# $(dirname $(realpath "$(which swift)"))/llvm-ar
+execute_process(COMMAND which swift OUTPUT_VARIABLE SWIFT_PATH OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND realpath ${SWIFT_PATH} OUTPUT_VARIABLE SWIFT_REAL_PATH OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND dirname ${SWIFT_REAL_PATH} OUTPUT_VARIABLE SWIFT_DIRNAME OUTPUT_STRIP_TRAILING_WHITESPACE)
+set(AR_PATH ${SWIFT_DIRNAME}/llvm-ar)
+
 # Extract Objectfile with app_main() symbol
 # So we can append it to __idf_main and not (just) as archive
 # This is so the linker will correctly resolve dependencies:
@@ -117,7 +124,7 @@ add_custom_command(
 	OUTPUT ${SWIFT_PRODUCT_RELEASE}/_main_swiftcode.o
 	COMMAND
 		# Extract first .o which defines the 'app_main' symbol
-		ar x ${SWIFT_PRODUCT_ARCHIVE} $$\( nm --defined-only -A ${SWIFT_PRODUCT_ARCHIVE} | grep -m 1 ' T app_main' | cut -d: -f2 \) --output ${SWIFT_PRODUCT_RELEASE}
+		${AR_PATH} x ${SWIFT_PRODUCT_ARCHIVE} $$\( nm --defined-only -A ${SWIFT_PRODUCT_ARCHIVE} | grep -m 1 ' T app_main' | cut -d: -f2 \) --output ${SWIFT_PRODUCT_RELEASE}
 		# Rename it to a predicatble file
 		&& \( mv -f -T ${SWIFT_PRODUCT_RELEASE}/$$\( nm --defined-only -A ${SWIFT_PRODUCT_ARCHIVE} | grep -m 1 ' T app_main' | cut -d: -f2 \) ${SWIFT_PRODUCT_RELEASE}/_main_swiftcode.o 2>/dev/null || \(
 			rm -rf ${SWIFT_PRODUCT_RELEASE}/_main_swiftcode.o && mv -f ${SWIFT_PRODUCT_RELEASE}/$$\( nm --defined-only -A ${SWIFT_PRODUCT_ARCHIVE} | grep -m 1 ' T app_main' | cut -d: -f2 \) ${SWIFT_PRODUCT_RELEASE}/_main_swiftcode.o \)
