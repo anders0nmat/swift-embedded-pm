@@ -51,6 +51,11 @@ set(SWIFT_PRODUCT_BUILD   "${COMPONENT_DIR}/.build")
 set(SWIFT_PRODUCT_RELEASE "${SWIFT_PRODUCT_BUILD}/release")
 set(SWIFT_PRODUCT_ARCHIVE "${SWIFT_PRODUCT_RELEASE}/lib${SWIFT_PRODUCT_NAME}.a")
 
+# Get swift toolchain location
+execute_process(COMMAND which swift OUTPUT_VARIABLE _SWIFT_LOCATION OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND realpath ${_SWIFT_LOCATION} OUTPUT_VARIABLE _SWIFT_ABS_LOCATION OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND dirname ${_SWIFT_ABS_LOCATION} OUTPUT_VARIABLE SWIFT_TOOLCHAIN OUTPUT_STRIP_TRAILING_WHITESPACE)
+
 # Generate Archive
 add_custom_target(swift-archive
 	COMMAND
@@ -58,10 +63,10 @@ add_custom_target(swift-archive
 		# If the file with app_main gets renamed, both objectfiles (old and new) will be in the archive, potentially causing problems
 		rm -f ${SWIFT_PRODUCT_ARCHIVE}
 		&&
-		swift package update
+		${SWIFT_TOOLCHAIN}/swift package update
 			--package-path ${COMPONENT_DIR}	
 		&&
-		swift build
+		${SWIFT_TOOLCHAIN}/swift build
 			--configuration=release
 			--package-path ${COMPONENT_DIR}
 			
@@ -88,7 +93,8 @@ add_custom_target(swift-archive
 # Generate all necessary include paths for LSP
 add_custom_target(swift-compile-flags
 	COMMAND
-		echo '' &&
+		echo ''
+		&&
 		\( echo '${SWIFT_INCLUDES}' && \( echo '$<TARGET_PROPERTY:__idf_main,INCLUDE_DIRECTORIES>' | tr '\;' '\\n' | sed -e 's/\\\(.*\\\)/-Xcc -I\\1/g' \) \)
 		| tr ' ' '\\n' | grep '^-I' > ${SWIFT_PRODUCT_RELEASE}/compile_flags.txt
 	BYPRODUCTS
@@ -98,12 +104,10 @@ add_custom_target(swift-compile-flags
 # Create needed symlinks so LSP finds the module information
 add_custom_target(swift-lsp-symlink
 	COMMAND
-		echo '' &&
-		\( ln -sfT ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET} ${SWIFT_PRODUCT_BUILD}/${SWIFT_LSP_TARGET} 2>/dev/null ||
-			\( rm -rf ${SWIFT_PRODUCT_BUILD}/${SWIFT_LSP_TARGET} && ln -sf ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET} ${SWIFT_PRODUCT_BUILD}/${SWIFT_LSP_TARGET} \)
-		\) && \( ln -sfT ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET}/release ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET}/debug 2>/dev/null ||
-			\( rm -rf ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET}/debug && ln -sf ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET}/release ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET}/debug \)
-		\)
+		rm -rf ${SWIFT_PRODUCT_BUILD}/${SWIFT_LSP_TARGET}
+		&& ln -sf ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET} ${SWIFT_PRODUCT_BUILD}/${SWIFT_LSP_TARGET}
+		&& rm -rf ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET}/debug
+		&& ln -sf ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET}/release ${SWIFT_PRODUCT_BUILD}/${SWIFT_TARGET}/debug
 	DEPENDS
 		swift-archive
 )
@@ -117,7 +121,7 @@ add_custom_command(
 	OUTPUT ${SWIFT_PRODUCT_RELEASE}/_main_swiftcode.o
 	COMMAND
 		# Extract first .o which defines the 'app_main' symbol
-		ar x ${SWIFT_PRODUCT_ARCHIVE} $$\( nm --defined-only -A ${SWIFT_PRODUCT_ARCHIVE} | grep -m 1 ' T app_main' | cut -d: -f2 \) --output ${SWIFT_PRODUCT_RELEASE}
+		${SWIFT_TOOLCHAIN}/llvm-ar x ${SWIFT_PRODUCT_ARCHIVE} $$\( nm --defined-only -A ${SWIFT_PRODUCT_ARCHIVE} | grep -m 1 ' T app_main' | cut -d: -f2 \) --output ${SWIFT_PRODUCT_RELEASE}
 		# Rename it to a predicatble file
 		&& \( mv -f -T ${SWIFT_PRODUCT_RELEASE}/$$\( nm --defined-only -A ${SWIFT_PRODUCT_ARCHIVE} | grep -m 1 ' T app_main' | cut -d: -f2 \) ${SWIFT_PRODUCT_RELEASE}/_main_swiftcode.o 2>/dev/null || \(
 			rm -rf ${SWIFT_PRODUCT_RELEASE}/_main_swiftcode.o && mv -f ${SWIFT_PRODUCT_RELEASE}/$$\( nm --defined-only -A ${SWIFT_PRODUCT_ARCHIVE} | grep -m 1 ' T app_main' | cut -d: -f2 \) ${SWIFT_PRODUCT_RELEASE}/_main_swiftcode.o \)
