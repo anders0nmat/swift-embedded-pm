@@ -4,9 +4,10 @@ This is a template project to develop Embedded Swift Packages for the ESP-IDF pl
 
 ## Known Limitations
 
-Everything that requires the Swift stdlib will not work because I have not yet figured out how to get hold of a riscv32-version of it.
+Everything that requires the Swift stdlib will not work because I have not yet figured out how to get hold of a embedded riscv32-version of it.
 This includes:
-- Dictionaries
+- ~~Dictionaries~~ Actually, Dictionaries work fine, using Strings as key does not
+- String Comparison, String Hashing
 - Actors
 
 ## Installation
