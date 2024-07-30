@@ -2,6 +2,13 @@
 
 This is a template project to develop Embedded Swift Packages for the ESP-IDF platform.
 
+## Known Limitations
+
+Everything that requires the Swift stdlib will not work because I have not yet figured out how to get hold of a riscv32-version of it.
+This includes:
+- Dictionaries
+- Actors
+
 ## Installation
 
 ### Requirements
@@ -202,4 +209,4 @@ It is a multi-step process, involving many "optional" steps to get sourcekit-lsp
 4. Link `_swiftcode.o` and `lib<product-name>.a` to the IDF build
 5. (optional) Export all included header-files to a `compile-flags-txt` for sourcekit-lsp to correctly resolve them
 
-If you are interested in more reading and the process of making this entire thing work, see [Story.md](/Story.md)
+If you are interested in more reading and the process of making this entire thing work, see [Story.md](https://github.com/anders0nmat/swift-embedded-pm/blob/b4311b1cb362d892d74a86bf371e6f13a03a2ba5/Story.md)
